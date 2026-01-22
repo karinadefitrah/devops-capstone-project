@@ -50,6 +50,14 @@ class TestAccountService(TestCase):
         """Runs once after each test case"""
         db.session.remove()
 
+    def test_list_accounts(self):
+        """It should List all Accounts"""
+        self._create_accounts(3)
+        resp = self.client.get(BASE_URL)
+        self.assertEqual(resp.status_code, status.HTTP_200_OK)
+        data = resp.get_json()
+        self.assertEqual(len(data), 3)
+
     ######################################################################
     #  H E L P E R   M E T H O D S
     ######################################################################
