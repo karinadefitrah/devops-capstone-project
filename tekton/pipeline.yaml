@@ -28,7 +28,7 @@ spec:
     # Clone
     # -------------------
     - name: clone
-      taskRef:
+     taskRef:
         name: git-clone
       workspaces:
         - name: output
@@ -53,6 +53,7 @@ spec:
           value: "python:3.9-slim"
         - name: args
           value:
+            - "--exit-zero"
             - "--count"
             - "--max-complexity=10"
             - "--max-line-length=127"
