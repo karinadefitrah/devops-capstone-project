@@ -108,6 +108,27 @@ def check_content_type(media_type):
 ######################################################################
 # UPDASTING ACCOUNT
 ######################################################################
+######################################################
+# UPDATE AN EXISTING ACCOUNT
+######################################################
+@app.route("/accounts/<int:account_id>", methods=["PUT"])
+def update_account(account_id):
+    """Updates an Account"""
+    app.logger.info("Request to update an Account with id: %s", account_id)
+
+    account = Account.find(account_id)
+    if not account:
+        abort(
+            status.HTTP_404_NOT_FOUND,
+            f"Account with id [{account_id}] could not be found."
+        )
+
+    check_content_type("application/json")
+
+    account.deserialize(request.get_json())
+    account.update()
+
+    return account.serialize(), status.HTTP_200_OK
 
 # ... place you code here to UPDATE an account ...
 
