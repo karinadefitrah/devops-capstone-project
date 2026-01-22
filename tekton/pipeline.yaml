@@ -2,6 +2,7 @@
 # This pipeline needs the following tasks from Tekton Catalog:
 #   - git-clone
 #   - flake8
+#   - nose
 #
 apiVersion: tekton.dev/v1beta1
 kind: Pipeline
@@ -10,14 +11,18 @@ metadata:
 spec:
   workspaces:
     - name: pipeline-workspace
+
   params:
     - name: repo-url
-      description: The git repository URL
+      description: Git repository URL
     - name: branch
-      description: The git branch to clone
+      description: Git branch
       default: main
 
   tasks:
+    # -------------------
+    # Clone Task
+    # -------------------
     - name: clone
       taskRef:
         name: git-clone
@@ -30,6 +35,9 @@ spec:
         - name: revision
           value: $(params.branch)
 
+    # -------------------
+    # Lint Task (flake8)
+    # -------------------
     - name: lint
       taskRef:
         name: flake8
@@ -42,9 +50,25 @@ spec:
         - name: args
           value:
             - "--count"
-            - "--exit-zero"
             - "--max-complexity=10"
             - "--max-line-length=127"
             - "--statistics"
+      runAfter:
+        - clone
+
+    # -------------------
+    # Test Task (nose)
+    # -------------------
+    - name: tests
+      taskRef:
+        name: nose
+      workspaces:
+        - name: source
+          workspace: pipeline-workspace
+      params:
+        - name: database_uri
+          value: "sqlite:///test.db"
+        - name: args
+          value: "-v --with-spec --spec-color"
       runAfter:
         - clone
