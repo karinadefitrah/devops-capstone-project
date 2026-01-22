@@ -97,9 +97,13 @@ class TestAccountService(TestCase):
     def _create_accounts(self, count):
         """Factory method to create accounts in bulk"""
         accounts = []
+
         for _ in range(count):
             account = AccountFactory()
-            response = self.client.post(BASE_URL, json=account.serialize())
+            response = self.client.post(
+                BASE_URL,
+                json=account.serialize(),
+            )
             self.assertEqual(
                 response.status_code,
                 status.HTTP_201_CREATED,
@@ -108,8 +112,9 @@ class TestAccountService(TestCase):
             new_account = response.get_json()
             account.id = new_account["id"]
             accounts.append(account)
-        return accounts
 
+
+        return accounts        
     ######################################################################
     #  A C C O U N T   T E S T   C A S E S
     ######################################################################
