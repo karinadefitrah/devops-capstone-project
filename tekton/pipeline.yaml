@@ -1,8 +1,9 @@
 #
-# This pipeline needs the following tasks from Tekton Catalog:
+# This pipeline needs the following tasks:
 #   - git-clone
 #   - flake8
 #   - nose
+#   - buildah (ClusterTask)
 #
 apiVersion: tekton.dev/v1beta1
 kind: Pipeline
@@ -18,10 +19,12 @@ spec:
     - name: branch
       description: Git branch
       default: main
+    - name: build-image
+      description: Image name to build and push
 
   tasks:
     # -------------------
-    # Clone Task
+    # Clone
     # -------------------
     - name: clone
       taskRef:
@@ -36,7 +39,7 @@ spec:
           value: $(params.branch)
 
     # -------------------
-    # Lint Task (flake8)
+    # Lint
     # -------------------
     - name: lint
       taskRef:
@@ -57,7 +60,7 @@ spec:
         - clone
 
     # -------------------
-    # Test Task (nose)
+    # Tests
     # -------------------
     - name: tests
       taskRef:
@@ -72,3 +75,20 @@ spec:
           value: "-v --with-spec --spec-color"
       runAfter:
         - clone
+
+    # -------------------
+    # Build Image
+    # -------------------
+    - name: build
+      taskRef:
+        name: buildah
+        kind: ClusterTask
+      workspaces:
+        - name: source
+          workspace: pipeline-workspace
+      params:
+        - name: IMAGE
+          value: "$(params.build-image)"
+      runAfter:
+        - lint
+        - tests
